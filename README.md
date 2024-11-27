@@ -28,3 +28,12 @@ In the output, you'll find options to open the app in a
 - [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+
+---
+
+- Allow the user to save Postcode to favourites by clicking on the Heart Button
+- Favourite Postcodes should render in a list on Favourites view
+- Allow the user to un-save Postcode from favourites
+- The Heart Button should disabled if there are no searched results
+- The Heart Button is filled, when searched result is already saved
+- The Heart Button is empty, when searched result is not saved

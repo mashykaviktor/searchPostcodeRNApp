@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
   Text,
   FlatList,
   TouchableOpacity,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+  Alert,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function FavouritesView() {
   const [favorites, setFavorites] = useState([]);
@@ -16,14 +18,37 @@ export default function FavouritesView() {
   }, []);
 
   const loadFavorites = async () => {
-    
+    try {
+      const storedFavorites = await AsyncStorage.getItem("@favorites");
+      if (storedFavorites) {
+        setFavorites(JSON.parse(storedFavorites));
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to load favorites");
+    }
   };
 
-  const removeFavorite = async () => {
-    
+  const saveFavorites = async (newFavorites) => {
+    try {
+      await AsyncStorage.setItem("@favorites", JSON.stringify(newFavorites));
+    } catch (error) {
+      Alert.alert("Error", "Failed to save favorites");
+    }
   };
 
-  const renderItem = ({ item }: { item: { postcode: string; region: string } }) => (
+  const removeFavorite = async (postcode) => {
+    const updatedFavorites = favorites.filter(
+      (item) => item.postcode !== postcode
+    );
+    setFavorites(updatedFavorites);
+    await saveFavorites(updatedFavorites);
+  };
+
+  const renderItem = ({
+    item,
+  }: {
+    item: { postcode: string; region: string };
+  }) => (
     <View style={styles.favoriteItem}>
       <View style={styles.favoriteInfo}>
         <Text style={styles.postcode}>{item.postcode}</Text>
@@ -31,9 +56,9 @@ export default function FavouritesView() {
       </View>
       <TouchableOpacity
         style={styles.removeButton}
-        onPress={() => removeFavorite()}
+        onPress={() => removeFavorite(item.postcode)}
       >
-      <Ionicons name="trash-outline" size={24} color="#FF3B30" />
+        <Ionicons name="trash-outline" size={24} color="#FF3B30" />
       </TouchableOpacity>
     </View>
   );
@@ -48,7 +73,7 @@ export default function FavouritesView() {
         <FlatList
           data={favorites}
           renderItem={renderItem}
-          keyExtractor={item => item.postcode}
+          keyExtractor={(item) => item.postcode}
           style={styles.list}
         />
       )}
@@ -59,39 +84,39 @@ export default function FavouritesView() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     paddingTop: 50,
     paddingHorizontal: 20,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   inputContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 20,
   },
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderRadius: 5,
     padding: 10,
     marginRight: 10,
     fontSize: 16,
   },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: "#007AFF",
     padding: 12,
     borderRadius: 5,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   resultWrapper: {
     flex: 1,
@@ -99,34 +124,34 @@ const styles = StyleSheet.create({
   resultContainer: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderRadius: 5,
     padding: 10,
   },
   resultItem: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   label: {
     flex: 1,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   value: {
     flex: 2,
   },
   favoriteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 12,
     marginTop: 10,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: "#f8f8f8",
     borderRadius: 5,
   },
   favoriteButtonText: {
-    color: '#007AFF',
+    color: "#007AFF",
     marginLeft: 8,
     fontSize: 16,
   },
@@ -135,22 +160,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   favoriteItem: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    alignItems: 'center',
+    borderBottomColor: "#eee",
+    alignItems: "center",
   },
   favoriteInfo: {
     flex: 1,
   },
   postcode: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   region: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginTop: 4,
   },
   removeButton: {
@@ -158,11 +183,11 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
 });
