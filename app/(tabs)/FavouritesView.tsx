@@ -1,47 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   StyleSheet,
   View,
   Text,
   FlatList,
   TouchableOpacity,
-  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useSharedState } from "../providers/SharedStateProvider";
+import { PostcodeResult } from "../types";
 
-export default function FavouritesView() {
-  const [favorites, setFavorites] = useState([]);
+export default function FavoritesView() {
+  const { sharedState, setSharedState } = useSharedState();
 
-  useEffect(() => {
-    loadFavorites();
-  }, []);
-
-  const loadFavorites = async () => {
-    try {
-      const storedFavorites = await AsyncStorage.getItem("@favorites");
-      if (storedFavorites) {
-        setFavorites(JSON.parse(storedFavorites));
-      }
-    } catch (error) {
-      Alert.alert("Error", "Failed to load favorites");
-    }
-  };
-
-  const saveFavorites = async (newFavorites) => {
-    try {
-      await AsyncStorage.setItem("@favorites", JSON.stringify(newFavorites));
-    } catch (error) {
-      Alert.alert("Error", "Failed to save favorites");
-    }
-  };
-
-  const removeFavorite = async (postcode) => {
-    const updatedFavorites = favorites.filter(
-      (item) => item.postcode !== postcode
+  const removeFavorite = async (postcode: string) => {
+    const updatedFavorites = sharedState.filter(
+      (item: PostcodeResult) => item.postcode !== postcode
     );
-    setFavorites(updatedFavorites);
-    await saveFavorites(updatedFavorites);
+    setSharedState(updatedFavorites);
   };
 
   const renderItem = ({
@@ -65,13 +41,13 @@ export default function FavouritesView() {
 
   return (
     <View style={styles.container}>
-      {favorites.length === 0 ? (
+      {sharedState.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No favorites yet</Text>
         </View>
       ) : (
         <FlatList
-          data={favorites}
+          data={sharedState}
           renderItem={renderItem}
           keyExtractor={(item) => item.postcode}
           style={styles.list}

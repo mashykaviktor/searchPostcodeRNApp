@@ -1,9 +1,12 @@
-import { Stack } from 'expo-router/stack';
+import { Stack } from "expo-router/stack";
+import { SharedStateProvider } from "./providers/SharedStateProvider";
 
 export default function Layout() {
   return (
-    <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-    </Stack>
+    <SharedStateProvider>
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
+    </SharedStateProvider>
   );
 }

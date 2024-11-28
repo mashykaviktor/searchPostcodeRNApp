@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   View,
@@ -10,93 +10,13 @@ import {
   Alert,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-interface PostcodeResult {
-  postcode: string;
-  region: string;
-  admin_district: string;
-  parish: string;
-  country: string;
-  parliamentary_constituency: string;
-  european_electoral_region: string;
-  latitude: number;
-  longitude: number;
-}
-
-const HeartButton = ({
-  isFavorite,
-  toggleFavorite,
-}: {
-  isFavorite: boolean;
-  toggleFavorite: () => void;
-}) => {
-  return (
-    <TouchableOpacity style={{ marginRight: 10 }} onPress={toggleFavorite}>
-      <Ionicons
-        name={isFavorite ? "heart" : "heart-outline"}
-        size={24}
-        color={isFavorite ? "red" : "black"}
-      />
-    </TouchableOpacity>
-  );
-};
+import { useSharedState } from "../providers/SharedStateProvider";
 
 export default function App() {
-  const navigation = useNavigation();
   const [postcode, setPostcode] = useState("");
-  const [result, setResult] = useState<PostcodeResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const [favorites, setFavorites] = useState([]);
 
-  const isFavorite = result
-    ? favorites.some((item) => item.postcode === result?.postcode)
-    : false;
-
-  useEffect(() => {
-    loadFavorites();
-  }, []);
-
-  React.useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <HeartButton isFavorite={isFavorite} toggleFavorite={toggleFavorite} />
-      ),
-    });
-  }, [navigation, isFavorite]);
-
-  const loadFavorites = async () => {
-    try {
-      const storedFavorites = await AsyncStorage.getItem("@favorites");
-      if (storedFavorites) {
-        setFavorites(JSON.parse(storedFavorites));
-      }
-    } catch (error) {
-      Alert.alert("Error", "Failed to load favorites");
-    }
-  };
-
-  const savedFavorites = async (newFavorites) => {
-    try {
-      await AsyncStorage.setItem("@favorites", JSON.stringify(newFavorites));
-    } catch (error) {
-      Alert.alert("Error", "Failed to save favorites");
-    }
-  };
-
-  const toggleFavorite = async () => {
-    // if (!result) return; // FIXME: should return null in case no result
-
-    const exists = favorites.some((item) => item.postcode === result?.postcode);
-
-    const updatedFavorites = exists
-      ? favorites.filter((item) => item.postcode !== result?.postcode)
-      : [...favorites, { postcode: result?.postcode, region: result?.region }];
-
-    setFavorites(updatedFavorites);
-    await savedFavorites(updatedFavorites);
-  };
+  const { result, setResult } = useSharedState();
 
   const lookupPostcode = async () => {
     if (!postcode.trim()) {
